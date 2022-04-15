@@ -39,7 +39,7 @@ class $name extends $baseName {
 
   @override
   R accept<R>(Visitor<R> visitor) => visitor.visit$name$baseName(this);
-}\n
+}
 ''';
 }
 
@@ -66,7 +66,7 @@ abstract class $baseName {
   output += '}\n\n';
 
   //Generate the visitor classes
-  output += types.map((type) => defineType(baseName, type)).join();
+  output += types.map((type) => defineType(baseName, type)).join('\n');
 
   return output;
 }

@@ -94,4 +94,3 @@ class While extends Stmt {
   @override
   R accept<R>(Visitor<R> visitor) => visitor.visitWhileStmt(this);
 }
-

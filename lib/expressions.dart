@@ -94,4 +94,3 @@ class Variable extends Expr {
   @override
   R accept<R>(Visitor<R> visitor) => visitor.visitVariableExpr(this);
 }
-
