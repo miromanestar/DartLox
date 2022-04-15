@@ -28,7 +28,7 @@ void runPrompt() {
 }
 
 void run(String source) {
-  final scanner = new Scanner(source);
+  final scanner = Scanner(source);
   final tokens = scanner.scanTokens();
 
   for (var token in tokens) {
