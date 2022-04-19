@@ -8,7 +8,7 @@ abstract class Stmt {
 abstract class Visitor<R> {
   R visitBlockStmt(Block visitor);
   R visitExpressionStmt(Expression visitor);
-  R visitFunctionStmt(Function visitor);
+  R visitLFunctionStmt(LFunction visitor);
   R visitIfStmt(If visitor);
   R visitPrintStmt(Print visitor);
   R visitReturnStmt(Return visitor);
@@ -34,15 +34,15 @@ class Expression extends Stmt {
   R accept<R>(Visitor<R> visitor) => visitor.visitExpressionStmt(this);
 }
 
-class Function extends Stmt {
+class LFunction extends Stmt {
   final Token name;
   final List<Token> params;
   final List<Stmt> body;
 
-  Function(this.name, this.params, this.body);
+  LFunction(this.name, this.params, this.body);
 
   @override
-  R accept<R>(Visitor<R> visitor) => visitor.visitFunctionStmt(this);
+  R accept<R>(Visitor<R> visitor) => visitor.visitLFunctionStmt(this);
 }
 
 class If extends Stmt {
@@ -88,8 +88,9 @@ class Var extends Stmt {
 class While extends Stmt {
   final Expr condition;
   final Stmt body;
+  final bool isForLoop;
 
-  While(this.condition, this.body);
+  While(this.condition, this.body, this.isForLoop);
 
   @override
   R accept<R>(Visitor<R> visitor) => visitor.visitWhileStmt(this);

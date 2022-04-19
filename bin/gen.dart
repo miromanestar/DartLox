@@ -18,12 +18,12 @@ const expTypes = [
 const stmtTypes = [
   'Block      : List<Stmt> statements',
   'Expression : Expr expression',
-  'Function   : Token name, List<Token> params, List<Stmt> body',
+  'LFunction   : Token name, List<Token> params, List<Stmt> body',
   'If         : Expr condition, Stmt thenBranch, Stmt elseBranch',
   'Print      : Expr expression',
   'Return     : Token keyword, Expr value',
   'Var        : Token name, Expr initializer',
-  'While      : Expr condition, Stmt body',
+  'While      : Expr condition, Stmt body, bool isForLoop',
 ];
 
 String defineType(String baseName, String type) {
