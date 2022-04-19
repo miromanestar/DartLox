@@ -45,11 +45,6 @@ enum TokenType {
 
   //Keywords
   AND,
-  BREAK,
-  CASE,
-  CLASS,
-  CONTINUE,
-  DEFAULT,
   ELSE,
   FALSE,
   FUN,
@@ -57,14 +52,13 @@ enum TokenType {
   IF,
   NIL,
   OR,
-  EXIT,
   PRINT,
   RETURN,
   SUPER,
-  SWITCH,
-  THIS,
   TRUE,
   VAR,
   WHILE,
+
+  //Misc
   EOF
 }
