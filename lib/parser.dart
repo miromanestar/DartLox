@@ -1,18 +1,17 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
-
-import 'dart:web_gl';
-
 import 'package:DartLox/types.dart';
 import 'package:DartLox/error.dart';
 import 'package:DartLox/expressions.dart' as Expr;
 import 'package:DartLox/statements.dart' as Stmt;
 
 class Parser {
+  final PARAM_LIMIT = 255;
+
   List<Token> _tokens = [];
 
   int _current = 0;
   int _loopDepth = 0;
-  Stmt.Stmt? _prevStmt = null;
+  Stmt.Stmt? _prevStmt;
   bool _isRepl;
 
   Parser(this._tokens, [this._isRepl = false]);
@@ -65,7 +64,7 @@ class Parser {
     List<Token> parameters = [];
     if (!_check(TokenType.RIGHT_PAREN)) {
       do {
-        if (parameters.length >= 255) {
+        if (parameters.length >= PARAM_LIMIT) {
           parseError(_peek(), ErrorType.PARAMETER_LIMIT);
         }
 
@@ -222,6 +221,138 @@ class Parser {
     return expr;
   }
 
+  Expr.Expr _or() {
+    Expr.Expr expr = _and();
+
+    while (_match([TokenType.OR])) {
+      Token oper = _previous();
+      Expr.Expr right = _and();
+      expr = Expr.Logical(expr, oper, right);
+    }
+
+    return expr;
+  }
+
+  Expr.Expr _and() {
+    Expr.Expr expr = _equality();
+
+    while (_match([TokenType.AND])) {
+      Token oper = _previous();
+      Expr.Expr right = _equality();
+      expr = Expr.Logical(expr, oper, right);
+    }
+
+    return expr;
+  }
+
+  Expr.Expr _equality() {
+    Expr.Expr expr = _comparison();
+
+    while (_match([TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL])) {
+      Token oper = _previous();
+      Expr.Expr right = _comparison();
+      expr = Expr.Binary(expr, oper, right);
+    }
+
+    return expr;
+  }
+
+  Expr.Expr _comparison() {
+    Expr.Expr expr = _term();
+
+    while (_match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])) {
+      Token oper = _previous();
+      Expr.Expr right = _term();
+      expr = Expr.Binary(expr, oper, right);
+    }
+
+    return expr;
+  }
+
+  Expr.Expr _term() {
+    Expr.Expr expr = _factor();
+
+    while (_match([TokenType.MINUS, TokenType.PLUS])) {
+      Token oper = _previous();
+      Expr.Expr right = _factor();
+      expr = Expr.Binary(expr, oper, right);
+    }
+
+    return expr;
+  }
+
+  Expr.Expr _factor() {
+    Expr.Expr expr = _unary();
+
+    while (_match([TokenType.SLASH, TokenType.STAR])) {
+      Token oper = _previous();
+      Expr.Expr right = _unary();
+      expr = Expr.Binary(expr, oper, right);
+    }
+
+    return expr;
+  }
+
+  Expr.Expr _unary() {
+    if (_match([TokenType.BANG, TokenType.MINUS])) {
+      Token oper = _previous();
+      Expr.Expr right = _unary();
+      return Expr.Unary(oper, right);
+    }
+
+    return _call();
+  }
+
+  Expr.Expr _call() {
+    Expr.Expr expr = _primary();
+
+    while (true) {
+      if (_match([TokenType.LEFT_PAREN]))
+        expr = _finishCall(expr);
+      else
+        break;
+    }
+
+    return expr;
+  }
+
+  Expr.Expr _finishCall(Expr.Expr callee) {
+    List<Expr.Expr> arguments = [];
+    
+    if (!_check(TokenType.RIGHT_PAREN)) {
+      do {
+        if (arguments.length >= PARAM_LIMIT)
+          throw parseError(_peek(), ErrorType.ARGUMENT_LIMIT);
+
+        arguments.add(_expression());
+      } while (_match([TokenType.COMMA]));
+    }
+
+    Token paren = _consume(TokenType.RIGHT_PAREN, ErrorType.EXPECTED_ARGS_RIGHT_PAREN);
+    return Expr.Call(callee, paren, arguments);
+  }
+
+  Expr.Expr _primary() {
+    if (_match([TokenType.FALSE]))
+      return Expr.Literal(false);
+    if (_match([TokenType.TRUE]))
+      return Expr.Literal(true);
+    if (_match([TokenType.NIL]))
+      return Expr.Literal(null);
+    if (_match([TokenType.NUMBER, TokenType.STRING]))
+      return Expr.Literal(_previous().literal);
+    if (_match([TokenType.IDENTIFIER]))
+      return Expr.Variable(_previous());
+    
+    if (_match([TokenType.LEFT_PAREN])) {
+      Expr.Expr expr = _expression();
+      _consume(TokenType.RIGHT_PAREN, ErrorType.EXPECTED_EXPR_RIGHT_PAREN);
+      return Expr.Grouping(expr);
+    }
+
+    throw parseError(_peek(), ErrorType.INVALID_EXPRESSION);
+  }
+
   Token _consume(TokenType type, ErrorType errType) {
     if (type == TokenType.SEMICOLON) _isRepl = false;
     if (_check(type)) return _advance();
@@ -261,4 +392,31 @@ class Parser {
   bool _isAtEnd() {
     return _peek().type == TokenType.EOF;
   }
+
+  void _synchronize() {
+  _advance();
+
+  while(!_isAtEnd()) {
+    if (_previous().type == TokenType.SEMICOLON)
+      return;
+
+    TokenType type = _peek().type;
+    if (type == TokenType.FUN)
+      break;
+    if (type == TokenType.VAR)
+      break;
+    if (type == TokenType.FOR)
+      break;
+    if (type == TokenType.IF)
+      break;
+    if (type == TokenType.WHILE)
+      break;
+    if (type == TokenType.PRINT)
+      break;
+    if (type == TokenType.RETURN)
+      return;
+
+    _advance();
+  }
+}
 }

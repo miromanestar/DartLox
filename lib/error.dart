@@ -14,6 +14,12 @@ void error(int line, ErrorType type) {
   _logReport(line, '', type);
 }
 
+RuntimeError runtimeError(Token token, ErrorType type) {
+  print("[line ${token.line}] Error ${_map[type]}: '${token.lexeme}'");
+  hadRuntimeError = true;
+  return RuntimeError();
+}
+
 ParseError parseError(Token token, ErrorType type) {
   if (token.type == TokenType.EOF) {
     _logReport(token.line, 'at end ', ErrorType.UNEXPECTED_EOF);
@@ -25,8 +31,16 @@ ParseError parseError(Token token, ErrorType type) {
 }
 
 const _map = {
+  //Runtime errors
+  ErrorType.UNDEFINED_VARIABLE: "Undefined variable",
+
   //Parser errors
+  ErrorType.ARGUMENT_LIMIT: "Cannot have more than 255 arguments",
+  ErrorType.INVALID_EXPRESSION: "Expect expression",
+  ErrorType.EXPECTED_ARGS_LEFT_PAREN: "",
+  ErrorType.EXPECTED_ARGS_RIGHT_PAREN: "Expected ')' after parameter list.",
   ErrorType.EXPECTED_BLOCK_RIGHT_BRACE: "Expected '}' after block.",
+  ErrorType.EXPECTED_EXPR_RIGHT_PAREN: "Expected ')' after expression.",
   ErrorType.EXPECTED_FOR_LEFT_PAREN: "Expected '(' after 'for'.",
   ErrorType.EXPECTED_FOR_RIGHT_PAREN: "Expected ')' after 'for' condition.",
   ErrorType.EXPECTED_FUNCTION_LEFT_BRACE: "Expected '{' after function declaration.",
@@ -61,7 +75,12 @@ enum ErrorType {
   UNTERMINATED_STRING,
 
   //Parser errors
+  ARGUMENT_LIMIT,
+  INVALID_EXPRESSION,
+  EXPECTED_ARGS_LEFT_PAREN,
+  EXPECTED_ARGS_RIGHT_PAREN,
   EXPECTED_BLOCK_RIGHT_BRACE,
+  EXPECTED_EXPR_RIGHT_PAREN,
   EXPECTED_FOR_LEFT_PAREN,
   EXPECTED_FOR_RIGHT_PAREN,
   EXPECTED_FUNCTION_LEFT_BRACE,
@@ -82,7 +101,11 @@ enum ErrorType {
   EXPECTED_WHILE_RIGHT_PAREN,
   INVALID_ASSIGNMENT,
   PARAMETER_LIMIT,
-  UNEXPECTED_EOF
+  UNEXPECTED_EOF,
+
+  //Runtime errors
+  UNDEFINED_VARIABLE
 }
 
 class ParseError extends Error { }
+class RuntimeError extends Error { }

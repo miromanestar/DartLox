@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:DartLox/error.dart';
+import 'package:DartLox/parser.dart';
+import 'package:DartLox/types.dart';
 import 'package:args/args.dart';
 
 import 'package:DartLox/scanner.dart';
@@ -23,17 +26,29 @@ void runPrompt() {
     if (line == null) {
       break;
     }
-    run(line);
+    run(line, true);
   }
 }
 
-void run(String source) {
+void run(String source, [bool isRepl = false]) {
   final scanner = Scanner(source);
   final tokens = scanner.scanTokens();
 
-  for (var token in tokens) {
-    print(token);
+  if (isRepl) {
+    for (var token in tokens) {
+      if (token.type == TokenType.SEMICOLON) {
+        isRepl = false;
+        break;
+      }
+    }
   }
+
+  final parser = Parser(tokens, isRepl);
+  final statements = parser.parse();
+
+  if (hadError)
+    return;
+  
 }
 
 void main(List<String> arguments) {
