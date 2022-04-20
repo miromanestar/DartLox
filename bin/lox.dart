@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:DartLox/error.dart';
+import 'package:DartLox/interpreter.dart';
 import 'package:DartLox/parser.dart';
 import 'package:DartLox/types.dart';
 import 'package:args/args.dart';
 
 import 'package:DartLox/scanner.dart';
+
+final interpreter = Interpreter();
 
 void runFile(String path) {
   var file = File(path);
@@ -27,6 +30,7 @@ void runPrompt() {
       break;
     }
     run(line, true);
+    hadError = false;
   }
 }
 
@@ -46,9 +50,9 @@ void run(String source, [bool isRepl = false]) {
   final parser = Parser(tokens, isRepl);
   final statements = parser.parse();
 
-  if (hadError)
-    return;
-  
+  if (hadError) return;
+
+  interpreter.interpret(statements, isRepl);
 }
 
 void main(List<String> arguments) {

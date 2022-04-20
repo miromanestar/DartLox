@@ -19,7 +19,7 @@ class Environment {
     if (enclosing != null)
       return enclosing?.get(name);
 
-    throw runtimeError(name, ErrorType.UNDEFINED_VARIABLE);
+    throw RuntimeError(name, ErrorType.UNDEFINED_VARIABLE);
   }
 
   void assign(Token name, Object? value) {
@@ -28,6 +28,6 @@ class Environment {
     else if (enclosing != null)
       enclosing?.assign(name, value);
     else
-      throw runtimeError(name, ErrorType.UNDEFINED_VARIABLE);
+      throw RuntimeError(name, ErrorType.UNDEFINED_VARIABLE);
   }
 }

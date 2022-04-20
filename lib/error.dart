@@ -6,7 +6,7 @@ bool hadError = false;
 bool hadRuntimeError = false;
 
 void _logReport (int line, String location, ErrorType type) {
-  print('[line $line] Error ${_map[type]}: $location');
+  print('[line $line] Error $location: ${_map[type]}');
   hadError = true;
 }
 
@@ -14,17 +14,17 @@ void error(int line, ErrorType type) {
   _logReport(line, '', type);
 }
 
-RuntimeError runtimeError(Token token, ErrorType type) {
-  print("[line ${token.line}] Error ${_map[type]}: '${token.lexeme}'");
+void runtimeError(RuntimeError err) {
+  Token token = err.token;
+  print("[Runtime][line ${token.line}] ${_map[err.type]} '${token.lexeme}'");
   hadRuntimeError = true;
-  return RuntimeError();
 }
 
 ParseError parseError(Token token, ErrorType type) {
   if (token.type == TokenType.EOF) {
     _logReport(token.line, 'at end ', ErrorType.UNEXPECTED_EOF);
   } else {
-    _logReport(token.line, 'at ', type);
+    _logReport(token.line, 'at ${token.lexeme}', type);
   }
 
   return ParseError();
@@ -32,6 +32,11 @@ ParseError parseError(Token token, ErrorType type) {
 
 const _map = {
   //Runtime errors
+  ErrorType.ARGUMENT_COUNT: "Argument count mismatch.",
+  ErrorType.CANNOT_CALL: "Can only call functions.",
+  ErrorType.OPERAND_NUMBER: "Operand must be a number.",
+  ErrorType.OPERANDS_NUMBER: "Operands must be numbers.",
+  ErrorType.OPERANDS_MUST_MATCH: "Operands must be two numbers or two strings",
   ErrorType.UNDEFINED_VARIABLE: "Undefined variable",
 
   //Parser errors
@@ -63,9 +68,10 @@ const _map = {
   ErrorType.PARAMETER_LIMIT: "Cannot have more than 255 parameters.",
   
   //Scanner errors
-  ErrorType.UNEXPECTED_CHARACTER: "Unexpected character",
+  ErrorType.UNEXPECTED_CHARACTER: "Unexpected character.",
   ErrorType.UNTERMINATED_STRING: "Unterminated string.",
-  ErrorType.UNEXPECTED_EOF: ""
+
+    ErrorType.UNEXPECTED_EOF: "Unexpected end of input."
 };
 
 enum ErrorType {
@@ -104,8 +110,25 @@ enum ErrorType {
   UNEXPECTED_EOF,
 
   //Runtime errors
+  ARGUMENT_COUNT,
+  CANNOT_CALL,
+  OPERAND_NUMBER,
+  OPERANDS_NUMBER,
+  OPERANDS_MUST_MATCH,
   UNDEFINED_VARIABLE
 }
 
 class ParseError extends Error { }
-class RuntimeError extends Error { }
+class RuntimeError extends Error { 
+  final Token token;
+  final ErrorType type;
+  final String? message;
+
+  RuntimeError(this.token, this.type, [this.message]);
+}
+
+class ReturnException extends Error {
+  final Object? value;
+
+  ReturnException(this.value);
+}

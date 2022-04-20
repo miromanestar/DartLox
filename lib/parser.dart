@@ -100,7 +100,7 @@ class Parser {
   Stmt.Stmt _expressionStmt() {
     Expr.Expr expr = _expression();
 
-    if (_isRepl && _peek().type == TokenType.SEMICOLON)
+    if (_isRepl && _peek().type != TokenType.SEMICOLON)
       return Stmt.Expression(expr);
 
     _consume(TokenType.SEMICOLON, ErrorType.EXPECTED_SEMICOLON);
