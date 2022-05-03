@@ -1,0 +1,5 @@
+print(clock());
+
+print("Enter your name: ");
+var name = input();
+print(interpolate("My name is: $s", "Miro"));
